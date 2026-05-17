@@ -1,0 +1,3 @@
+.env
+.DS_Store
+push_to_github.ps1
