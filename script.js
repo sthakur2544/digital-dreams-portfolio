@@ -1,8 +1,15 @@
 // ===== NAVBAR SCROLL EFFECT =====
 const navbar = document.getElementById('navbar');
+let ticking = false;
 window.addEventListener('scroll', () => {
-  navbar.classList.toggle('scrolled', window.scrollY > 50);
-});
+  if (!ticking) {
+    window.requestAnimationFrame(() => {
+      if (navbar) navbar.classList.toggle('scrolled', window.scrollY > 50);
+      ticking = false;
+    });
+    ticking = true;
+  }
+}, { passive: true });
 
 // ===== HAMBURGER MENU =====
 const hamburger = document.getElementById('hamburger');
@@ -69,15 +76,23 @@ if (form) {
   });
 }
 
-// ===== SMOOTH ACTIVE NAV LINK =====
+// ===== SMOOTH ACTIVE NAV LINK (Optimized with IntersectionObserver) =====
 const sections = document.querySelectorAll('section[id]');
 const navLinkEls = document.querySelectorAll('.nav-link:not(.nav-cta)');
-window.addEventListener('scroll', () => {
-  let current = '';
-  sections.forEach(sec => {
-    if (window.scrollY >= sec.offsetTop - 200) current = sec.getAttribute('id');
+
+const navObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const current = entry.target.getAttribute('id');
+      navLinkEls.forEach(link => {
+        if (link.getAttribute('href') === `#${current}`) {
+          link.style.color = 'var(--text-primary)';
+        } else {
+          link.style.color = '';
+        }
+      });
+    }
   });
-  navLinkEls.forEach(link => {
-    link.style.color = link.getAttribute('href') === `#${current}` ? 'var(--text)' : '';
-  });
-});
+}, { rootMargin: '-20% 0px -80% 0px' });
+
+sections.forEach(sec => navObserver.observe(sec));
